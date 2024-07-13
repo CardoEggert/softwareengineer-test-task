@@ -8,9 +8,15 @@ import "google/protobuf/timestamp.proto";
 
 service ScoreResource {
   rpc ScoresByTicket (ScoresByTicketRequest) returns (ScoresByTicketResponse) {}
+  rpc OverallQualityScore (OverallQualityScoreRequest) returns (OverallQualityScoreResponse) {}
 }
 
 message ScoresByTicketRequest {
+  google.protobuf.Timestamp period_start = 1;
+  google.protobuf.Timestamp period_end = 2;
+}
+
+message OverallQualityScoreRequest {
   google.protobuf.Timestamp period_start = 1;
   google.protobuf.Timestamp period_end = 2;
 }
@@ -27,4 +33,8 @@ message ScoreByTicket {
 
 message ScoresByTicketResponse {
   repeated ScoreByTicket scoreByTickets = 1;
+}
+
+message OverallQualityScoreResponse {
+  int32 score = 1;
 }
