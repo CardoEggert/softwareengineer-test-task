@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.eggert.engineer.grpc";
+option java_outer_classname = "ScoreResourceProto";
+
+import "google/protobuf/timestamp.proto";
+
+service ScoreResource {
+  rpc ScoresByTicket (ScoresByTicketRequest) returns (ScoresByTicketResponse) {}
+}
+
+message ScoresByTicketRequest {
+  google.protobuf.Timestamp period_start = 1;
+  google.protobuf.Timestamp period_end = 2;
+}
+
+message TicketCategoryScore {
+  string name = 1;
+  int32 score = 2;
+}
+
+message ScoreByTicket {
+  int32 id = 1;
+  repeated TicketCategoryScore ticketCategoryScores = 2;
+}
+
+message ScoresByTicketResponse {
+  repeated ScoreByTicket scoreByTickets = 1;
+}

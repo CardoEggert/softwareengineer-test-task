@@ -6,6 +6,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.stream.Stream;
 
 import static java.math.BigDecimal.*;
@@ -45,4 +46,21 @@ public class ScoreUtilTest {
     void calculateScoreTests(BigDecimal categoryWeight, BigDecimal rating, BigDecimal expectedScore) {
         assertThat(ScoreUtil.calculateScore(categoryWeight, rating)).isEqualByComparingTo(expectedScore);
     }
+
+    private static Stream<Arguments> averagePercentageSource() {
+        return Stream.of(
+                Arguments.of(List.of(), ZERO),
+                Arguments.of(List.of(valueOf(10)), valueOf(10)),
+                Arguments.of(List.of(valueOf(10), valueOf(20)), valueOf(15)),
+                Arguments.of(List.of(valueOf(10), valueOf(20), valueOf(30)), valueOf(20))
+        );
+    }
+    // TODO: More test cases to cover
+    @ParameterizedTest
+    @MethodSource(value = "averagePercentageSource")
+    void percentageTests(List<BigDecimal> percentages, BigDecimal expectedPercentage) {
+        assertThat(ScoreUtil.averagePercentage(percentages)).isEqualByComparingTo(expectedPercentage);
+    }
+
+
 }

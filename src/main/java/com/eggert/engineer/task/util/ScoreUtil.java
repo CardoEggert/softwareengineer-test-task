@@ -1,7 +1,10 @@
 package com.eggert.engineer.task.util;
 
+import org.springframework.util.CollectionUtils;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.List;
 
 public final class ScoreUtil {
 
@@ -9,6 +12,21 @@ public final class ScoreUtil {
     private static final BigDecimal ONE_HUNDRED = BigDecimal.valueOf(100);
 
     private ScoreUtil() {}
+
+    /**
+     * Aggregate percentages using simple average
+     * @param percentages - list of percentages
+     * @return average percentage
+     */
+    public static BigDecimal averagePercentage(List<BigDecimal> percentages) {
+        if (CollectionUtils.isEmpty(percentages)) {
+            return BigDecimal.ZERO;
+        }
+        return percentages
+                .stream()
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .divide(BigDecimal.valueOf(percentages.size()), RoundingMode.FLOOR);
+    }
 
     /**
      * Calculating the score based on category weight and rating

@@ -1,5 +1,6 @@
 package com.eggert.engineer.task.db.entities;
 
+import com.eggert.engineer.task.db.converter.LocalDateTimeAttributeConverter;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -15,10 +16,10 @@ public class Rating {
     private int id;
     @Column(name = "rating", nullable = false)
     private BigDecimal rating;
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "ticket_id")
     private Ticket ticket;
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "rating_category_id")
     private RatingCategory ratingCategory;
     @ManyToOne(fetch = FetchType.LAZY)
@@ -28,34 +29,63 @@ public class Rating {
     @JoinColumn(name = "reviewee_id")
     private User reviewee;
     @Column(name = "created_at")
+    @Convert(converter = LocalDateTimeAttributeConverter.class)
     private LocalDateTime createdAt;
 
     public int getId() {
         return id;
     }
 
+    public void setId(int id) {
+        this.id = id;
+    }
+
     public BigDecimal getRating() {
         return rating;
+    }
+
+    public void setRating(BigDecimal rating) {
+        this.rating = rating;
     }
 
     public Ticket getTicket() {
         return ticket;
     }
 
+    public void setTicket(Ticket ticket) {
+        this.ticket = ticket;
+    }
+
     public RatingCategory getRatingCategory() {
         return ratingCategory;
+    }
+
+    public void setRatingCategory(RatingCategory ratingCategory) {
+        this.ratingCategory = ratingCategory;
     }
 
     public User getReviewer() {
         return reviewer;
     }
 
+    public void setReviewer(User reviewer) {
+        this.reviewer = reviewer;
+    }
+
     public User getReviewee() {
         return reviewee;
     }
 
+    public void setReviewee(User reviewee) {
+        this.reviewee = reviewee;
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 
     @Override
