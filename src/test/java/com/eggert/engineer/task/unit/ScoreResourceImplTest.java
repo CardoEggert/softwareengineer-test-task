@@ -1,5 +1,7 @@
 package com.eggert.engineer.task.unit;
 
+import com.eggert.engineer.grpc.OverallQualityScoreRequest;
+import com.eggert.engineer.grpc.OverallQualityScoreResponse;
 import com.eggert.engineer.grpc.ScoresByTicketRequest;
 import com.eggert.engineer.grpc.ScoresByTicketResponse;
 import com.eggert.engineer.task.ScoreResourceImpl;
@@ -37,6 +39,7 @@ public class ScoreResourceImplTest {
     @InjectMocks
     private ScoreResourceImpl scoreResource;
 
+    // TODO: More tests
     @Test
     void scoresByTicket() throws Exception {
         doReturn(List.of(createTicket())).when(scoreService).getTicketForPeriod(any(), any());
@@ -65,6 +68,33 @@ public class ScoreResourceImplTest {
         assertThat(results.getFirst().getScoreByTicketsList().getFirst().getTicketCategoryScoresList()).isNotEmpty();
         assertThat(results.getFirst().getScoreByTicketsList().getFirst().getTicketCategoryScoresList().getFirst().getName()).isNotNull();
         assertThat(results.getFirst().getScoreByTicketsList().getFirst().getTicketCategoryScoresList().getFirst().getScore()).isEqualTo(expectedAverage);
+    }
+
+    // TODO: More tests
+    @Test
+    void overallQualityScore() throws Exception {
+        doReturn(List.of(
+                createRating(1),
+                createRating(2),
+                createRating(3),
+                createRating(4),
+                createRating(5)))
+                .when(scoreService)
+                .getRatingsForPeriod(any(), any());
+
+        final int expectedAverage = 42;
+        OverallQualityScoreRequest request = OverallQualityScoreRequest.newBuilder()
+                .setPeriodStart(Timestamp.newBuilder().build())
+                .setPeriodEnd(Timestamp.newBuilder().build())
+                .build();
+        StreamRecorder<OverallQualityScoreResponse> responseObserver = StreamRecorder.create();
+        scoreResource.overallQualityScore(request, responseObserver);
+        if (!responseObserver.awaitCompletion(5, TimeUnit.SECONDS)) {
+            fail("The call did not terminate in time");
+        }
+        assertNull(responseObserver.getError());
+        final var result = responseObserver.getValues();
+        assertThat(result.getFirst().getScore()).isEqualTo(expectedAverage);
     }
 
     private Rating createRating(int rating) {

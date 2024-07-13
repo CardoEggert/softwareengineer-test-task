@@ -25,9 +25,13 @@ public class ScoreService {
     }
 
     // TODO: Needs a solution with batching, as we are currently using SQLite then we can just load everything to memory and filter it
-    @Transactional(readOnly= true) // Transactional needed for keeping the session open for fetching the foreign table values
+    @Transactional(readOnly = true) // Transactional needed for keeping the session open for fetching the foreign table values
     public List<Rating> getRatingsForTickets(Set<Integer> ticketIds) {
         return ratingRepository.findAll().stream().filter(rating -> ticketIds.contains(rating.getTicket().getId())).toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<Rating> getRatingsForPeriod(LocalDateTime periodStart, LocalDateTime periodEnd) {
+        return ratingRepository.getRatings(periodStart, periodEnd);
+    }
 }

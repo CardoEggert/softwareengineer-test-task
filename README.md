@@ -36,6 +36,7 @@ Please fork this repository and share the link to your solution with us.
         |----|----|----|
         | 1   |  100%  |  30%  |
         | 2   |  30%  |  80%  |
+      * Improvement idea: Should consider pagination and what order the data should be returned in
 
     * **Overall quality score**
 

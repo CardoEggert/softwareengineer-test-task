@@ -65,6 +65,21 @@ public class ScoreResourceImpl extends ScoreResourceGrpc.ScoreResourceImplBase {
         responseObserver.onCompleted();
     }
 
+    @Override
+    public void overallQualityScore(OverallQualityScoreRequest request, StreamObserver<OverallQualityScoreResponse> responseObserver) {
+        final LocalDateTime periodStart = convert(request.getPeriodStart());
+        final LocalDateTime periodEnd = convert(request.getPeriodEnd());
+        final List<Rating> ratings = scoreService.getRatingsForPeriod(periodStart, periodEnd);
+        final List<BigDecimal> scores = ratings
+                .stream()
+                .map(x -> ScoreUtil.calculateScore(x.getRatingCategory().getWeight(), x.getRating()))
+                .toList();
+        final BigDecimal aggregatedScore = ScoreUtil.averagePercentage(scores);
+        final var responseBuilder = OverallQualityScoreResponse.newBuilder().setScore(aggregatedScore.intValue());
+        responseObserver.onNext(responseBuilder.build());
+        responseObserver.onCompleted();
+    }
+
     private static LocalDateTime convert(Timestamp timestamp) {
         return LocalDateTime.ofInstant(Instant.ofEpochSecond(timestamp.getSeconds()), ZoneId.systemDefault());
     }
