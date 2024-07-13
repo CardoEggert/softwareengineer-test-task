@@ -1,10 +1,10 @@
-package com.eggert.engineer.task;
+package com.eggert.engineer.task.integration;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class ApplicationTests {
+class ApplicationIT {
 
 	@Test
 	void contextLoads() {
