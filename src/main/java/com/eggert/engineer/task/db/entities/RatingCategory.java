@@ -1,7 +1,6 @@
 package com.eggert.engineer.task.db.entities;
 
 import jakarta.persistence.*;
-
 import java.math.BigDecimal;
 import java.util.Objects;
 
@@ -9,48 +8,50 @@ import java.util.Objects;
 @Table(name = "rating_categories")
 public class RatingCategory {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
-    @Column(name = "name", nullable = false)
-    private String name;
-    @Column(name = "weight", nullable = false)
-    private BigDecimal weight;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private int id;
 
-    public int getId() {
-        return id;
-    }
+  @Column(name = "name", nullable = false)
+  private String name;
 
-    public void setId(int id) {
-        this.id = id;
-    }
+  @Column(name = "weight", nullable = false)
+  private BigDecimal weight;
 
-    public String getName() {
-        return name;
-    }
+  public int getId() {
+    return id;
+  }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+  public void setId(int id) {
+    this.id = id;
+  }
 
-    public BigDecimal getWeight() {
-        return weight;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public void setWeight(BigDecimal weight) {
-        this.weight = weight;
-    }
+  public void setName(String name) {
+    this.name = name;
+  }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        RatingCategory that = (RatingCategory) o;
-        return id == that.id && name.equals(that.name) && weight.equals(that.weight);
-    }
+  public BigDecimal getWeight() {
+    return weight;
+  }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, name, weight);
-    }
+  public void setWeight(BigDecimal weight) {
+    this.weight = weight;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    RatingCategory that = (RatingCategory) o;
+    return id == that.id && name.equals(that.name) && weight.equals(that.weight);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(id, name, weight);
+  }
 }

@@ -2,7 +2,6 @@ package com.eggert.engineer.task.db.entities;
 
 import com.eggert.engineer.task.db.converter.LocalDateTimeAttributeConverter;
 import jakarta.persistence.*;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -11,99 +10,105 @@ import java.util.Objects;
 @Table(name = "ratings")
 public class Rating {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
-    @Column(name = "rating", nullable = false)
-    private BigDecimal rating;
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "ticket_id")
-    private Ticket ticket;
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "rating_category_id")
-    private RatingCategory ratingCategory;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "reviewer_id")
-    private User reviewer;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "reviewee_id")
-    private User reviewee;
-    @Column(name = "created_at")
-    @Convert(converter = LocalDateTimeAttributeConverter.class)
-    private LocalDateTime createdAt;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private int id;
 
-    public int getId() {
-        return id;
-    }
+  @Column(name = "rating", nullable = false)
+  private BigDecimal rating;
 
-    public void setId(int id) {
-        this.id = id;
-    }
+  @ManyToOne(fetch = FetchType.EAGER)
+  @JoinColumn(name = "ticket_id")
+  private Ticket ticket;
 
-    public BigDecimal getRating() {
-        return rating;
-    }
+  @ManyToOne(fetch = FetchType.EAGER)
+  @JoinColumn(name = "rating_category_id")
+  private RatingCategory ratingCategory;
 
-    public void setRating(BigDecimal rating) {
-        this.rating = rating;
-    }
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "reviewer_id")
+  private User reviewer;
 
-    public Ticket getTicket() {
-        return ticket;
-    }
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "reviewee_id")
+  private User reviewee;
 
-    public void setTicket(Ticket ticket) {
-        this.ticket = ticket;
-    }
+  @Column(name = "created_at")
+  @Convert(converter = LocalDateTimeAttributeConverter.class)
+  private LocalDateTime createdAt;
 
-    public RatingCategory getRatingCategory() {
-        return ratingCategory;
-    }
+  public int getId() {
+    return id;
+  }
 
-    public void setRatingCategory(RatingCategory ratingCategory) {
-        this.ratingCategory = ratingCategory;
-    }
+  public void setId(int id) {
+    this.id = id;
+  }
 
-    public User getReviewer() {
-        return reviewer;
-    }
+  public BigDecimal getRating() {
+    return rating;
+  }
 
-    public void setReviewer(User reviewer) {
-        this.reviewer = reviewer;
-    }
+  public void setRating(BigDecimal rating) {
+    this.rating = rating;
+  }
 
-    public User getReviewee() {
-        return reviewee;
-    }
+  public Ticket getTicket() {
+    return ticket;
+  }
 
-    public void setReviewee(User reviewee) {
-        this.reviewee = reviewee;
-    }
+  public void setTicket(Ticket ticket) {
+    this.ticket = ticket;
+  }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
+  public RatingCategory getRatingCategory() {
+    return ratingCategory;
+  }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
+  public void setRatingCategory(RatingCategory ratingCategory) {
+    this.ratingCategory = ratingCategory;
+  }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Rating rating1 = (Rating) o;
-        return id == rating1.id
-                && rating.equals(rating1.rating)
-                && ticket.equals(rating1.ticket)
-                && ratingCategory.equals(rating1.ratingCategory)
-                && reviewer.equals(rating1.reviewer)
-                && reviewee.equals(rating1.reviewee)
-                && Objects.equals(createdAt, rating1.createdAt);
-    }
+  public User getReviewer() {
+    return reviewer;
+  }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, rating, ticket, ratingCategory, reviewer, reviewee, createdAt);
-    }
+  public void setReviewer(User reviewer) {
+    this.reviewer = reviewer;
+  }
+
+  public User getReviewee() {
+    return reviewee;
+  }
+
+  public void setReviewee(User reviewee) {
+    this.reviewee = reviewee;
+  }
+
+  public LocalDateTime getCreatedAt() {
+    return createdAt;
+  }
+
+  public void setCreatedAt(LocalDateTime createdAt) {
+    this.createdAt = createdAt;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    Rating rating1 = (Rating) o;
+    return id == rating1.id
+        && rating.equals(rating1.rating)
+        && ticket.equals(rating1.ticket)
+        && ratingCategory.equals(rating1.ratingCategory)
+        && reviewer.equals(rating1.reviewer)
+        && reviewee.equals(rating1.reviewee)
+        && Objects.equals(createdAt, rating1.createdAt);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(id, rating, ticket, ratingCategory, reviewer, reviewee, createdAt);
+  }
 }
