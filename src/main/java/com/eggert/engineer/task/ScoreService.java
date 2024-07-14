@@ -96,7 +96,8 @@ public class ScoreService {
           averagePercentageFromRatings(categoryRatings).intValue());
       for (Pair<LocalDate, LocalDate> period : periods) {
         final var datePeriodBuilder = PeriodScore.newBuilder();
-        datePeriodBuilder.setPeriodStart(period.getFirst().format(DateTimeFormatter.ISO_LOCAL_DATE));
+        datePeriodBuilder.setPeriodStart(
+            period.getFirst().format(DateTimeFormatter.ISO_LOCAL_DATE));
         datePeriodBuilder.setPeriodEnd(period.getSecond().format(DateTimeFormatter.ISO_LOCAL_DATE));
         datePeriodBuilder.setScore(
             averagePercentageFromRatings(

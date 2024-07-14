@@ -73,16 +73,8 @@ public class Rating {
     return reviewer;
   }
 
-  public void setReviewer(User reviewer) {
-    this.reviewer = reviewer;
-  }
-
   public User getReviewee() {
     return reviewee;
-  }
-
-  public void setReviewee(User reviewee) {
-    this.reviewee = reviewee;
   }
 
   public LocalDateTime getCreatedAt() {

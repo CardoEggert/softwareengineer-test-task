@@ -32,16 +32,8 @@ public class Ticket {
     return subject;
   }
 
-  public void setSubject(String subject) {
-    this.subject = subject;
-  }
-
   public LocalDateTime getCreatedAt() {
     return createdAt;
-  }
-
-  public void setCreatedAt(LocalDateTime createdAt) {
-    this.createdAt = createdAt;
   }
 
   @Override
