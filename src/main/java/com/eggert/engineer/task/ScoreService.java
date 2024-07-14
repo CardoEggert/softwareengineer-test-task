@@ -25,10 +25,9 @@ public class ScoreService {
         return ticketRepository.getTickets(periodStart, periodEnd);
     }
 
-    // TODO: Needs a solution with batching, as we are currently using SQLite then we can just load everything to memory and filter it
     @Transactional(readOnly = true) // Transactional needed for keeping the session open for fetching the foreign table values
     public List<Rating> getRatingsForTickets(Set<Integer> ticketIds) {
-        return ratingRepository.findAll().stream().filter(rating -> ticketIds.contains(rating.getTicket().getId())).toList();
+        return ratingRepository.getRatingsByTicketIds(ticketIds);
     }
 
     @Transactional(readOnly = true)

@@ -19,11 +19,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.eggert.engineer.task.util.CollectionUtil.batches;
 import static com.eggert.engineer.task.util.ScoreUtil.averagePercentageFromRatings;
 
 @GrpcService
 public class ScoreResourceImpl extends ScoreResourceGrpc.ScoreResourceImplBase {
 
+    public static final int BATCH_SIZE = 200;
     @Autowired
     private ScoreService scoreService;
 
@@ -87,30 +89,32 @@ public class ScoreResourceImpl extends ScoreResourceGrpc.ScoreResourceImplBase {
         final LocalDateTime periodStart = convert(request.getPeriodStart());
         final LocalDateTime periodEnd = convert(request.getPeriodEnd());
         final List<Ticket> tickets =  scoreService.getTicketForPeriod(periodStart, periodEnd);
-        final List<Rating> ratings = scoreService.getRatingsForTickets(
-                tickets.stream().map(Ticket::getId).collect(Collectors.toSet()));
-        final Map<Integer, List<Rating>> ratingsByTicketId = ratings
-                .stream()
-                .collect(Collectors.groupingBy(x -> x.getTicket().getId()));
-        for (Ticket ticket : tickets) {
-            final var ticketBuilder = ScoreByTicket.newBuilder();
-            ticketBuilder.setId(ticket.getId());
-            final List<Rating> ticketRatings = ratingsByTicketId.get(ticket.getId());
-            if (CollectionUtils.isEmpty(ticketRatings)) {
-                continue;
-            }
-            final Map<RatingCategory, List<Rating>> ratingsByCategories = ticketRatings
+        for (List<Ticket> batchTickets : batches(tickets, BATCH_SIZE)) {
+            final List<Rating> ratings = scoreService.getRatingsForTickets(
+                    batchTickets.stream().map(Ticket::getId).collect(Collectors.toSet()));
+            final Map<Integer, List<Rating>> ratingsByTicketId = ratings
                     .stream()
-                    .collect(Collectors.groupingBy(Rating::getRatingCategory));
-            for (Map.Entry<RatingCategory, List<Rating>> ratingsByCategory : ratingsByCategories.entrySet()) {
-                final var categoryBuilder = TicketCategoryScore.newBuilder();
-                final RatingCategory ratingCategory = ratingsByCategory.getKey();
-                categoryBuilder.setName(ratingCategory.getName());
-                final List<Rating> ratingsForCategory = ratingsByCategory.getValue();
-                categoryBuilder.setScore(averagePercentageFromRatings(ratingsForCategory).intValue());
-                ticketBuilder.addTicketCategoryScores(categoryBuilder.build());
+                    .collect(Collectors.groupingBy(x -> x.getTicket().getId()));
+            for (Ticket ticket : batchTickets) {
+                final var ticketBuilder = ScoreByTicket.newBuilder();
+                ticketBuilder.setId(ticket.getId());
+                final List<Rating> ticketRatings = ratingsByTicketId.get(ticket.getId());
+                if (CollectionUtils.isEmpty(ticketRatings)) {
+                    continue;
+                }
+                final Map<RatingCategory, List<Rating>> ratingsByCategories = ticketRatings
+                        .stream()
+                        .collect(Collectors.groupingBy(Rating::getRatingCategory));
+                for (Map.Entry<RatingCategory, List<Rating>> ratingsByCategory : ratingsByCategories.entrySet()) {
+                    final var categoryBuilder = TicketCategoryScore.newBuilder();
+                    final RatingCategory ratingCategory = ratingsByCategory.getKey();
+                    categoryBuilder.setName(ratingCategory.getName());
+                    final List<Rating> ratingsForCategory = ratingsByCategory.getValue();
+                    categoryBuilder.setScore(averagePercentageFromRatings(ratingsForCategory).intValue());
+                    ticketBuilder.addTicketCategoryScores(categoryBuilder.build());
+                }
+                responseBuilder.addScoreByTickets(ticketBuilder.build());
             }
-            responseBuilder.addScoreByTickets(ticketBuilder.build());
         }
         responseObserver.onNext(responseBuilder.build());
         responseObserver.onCompleted();

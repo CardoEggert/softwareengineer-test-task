@@ -8,10 +8,13 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 public interface RatingRepository extends JpaRepository<Rating, Integer> {
 
     @Query("SELECT r FROM Rating r WHERE r.createdAt BETWEEN :periodStart AND :periodEnd")
     List<Rating> getRatings(@Param("periodStart") LocalDateTime periodStart, @Param("periodEnd") LocalDateTime periodEnd);
 
+    @Query("SELECT r FROM Rating r WHERE r.ticket.id IN (:ticketIds)")
+    List<Rating> getRatingsByTicketIds(@Param("ticketIds") Set<Integer> ticketIds);
 }
