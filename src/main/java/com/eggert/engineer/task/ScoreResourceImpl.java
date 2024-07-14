@@ -15,6 +15,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -25,6 +26,7 @@ public class ScoreResourceImpl extends ScoreResourceGrpc.ScoreResourceImplBase {
     @Autowired
     private ScoreService scoreService;
 
+    // TODO: Date validation
     @Override
     public void scoresByTicket(ScoresByTicketRequest request, StreamObserver<ScoresByTicketResponse> responseObserver) {
         final var responseBuilder = ScoresByTicketResponse.newBuilder();
@@ -65,17 +67,27 @@ public class ScoreResourceImpl extends ScoreResourceGrpc.ScoreResourceImplBase {
         responseObserver.onCompleted();
     }
 
+    // TODO: Date validation
     @Override
     public void overallQualityScore(OverallQualityScoreRequest request, StreamObserver<OverallQualityScoreResponse> responseObserver) {
         final LocalDateTime periodStart = convert(request.getPeriodStart());
         final LocalDateTime periodEnd = convert(request.getPeriodEnd());
-        final List<Rating> ratings = scoreService.getRatingsForPeriod(periodStart, periodEnd);
-        final List<BigDecimal> scores = ratings
-                .stream()
-                .map(x -> ScoreUtil.calculateScore(x.getRatingCategory().getWeight(), x.getRating()))
-                .toList();
-        final BigDecimal aggregatedScore = ScoreUtil.averagePercentage(scores);
-        final var responseBuilder = OverallQualityScoreResponse.newBuilder().setScore(aggregatedScore.intValue());
+        final var responseBuilder = OverallQualityScoreResponse.newBuilder();
+        responseBuilder.setScore(scoreService.getScoreForPeriod(periodStart, periodEnd));
+        responseObserver.onNext(responseBuilder.build());
+        responseObserver.onCompleted();
+    }
+
+    // TODO: Date validation
+    @Override
+    public void periodOverPeriodScoreChange(PeriodOverPeriodScoreChangeRequest request, StreamObserver<PeriodOverPeriodScoreChangeResponse> responseObserver) {
+        final var responseBuilder = PeriodOverPeriodScoreChangeResponse.newBuilder();
+        final LocalDateTime previousPeriodStart = convert(request.getPreviousPeriodStart());
+        final LocalDateTime previousPeriodEnd = convert(request.getPreviousPeriodEnd());
+        responseBuilder.setPreviousPeriodScore(scoreService.getScoreForPeriod(previousPeriodStart, previousPeriodEnd));
+        final LocalDateTime selectedPeriodStart = convert(request.getSelectedPeriodStart());
+        final LocalDateTime selectedPeriodEnd = convert(request.getSelectedPeriodEnd());
+        responseBuilder.setSelectedPeriodScore(scoreService.getScoreForPeriod(selectedPeriodStart, selectedPeriodEnd));
         responseObserver.onNext(responseBuilder.build());
         responseObserver.onCompleted();
     }

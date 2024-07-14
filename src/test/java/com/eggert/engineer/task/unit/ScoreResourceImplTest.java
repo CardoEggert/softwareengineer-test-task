@@ -25,6 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 public class ScoreResourceImplTest {
@@ -70,19 +71,11 @@ public class ScoreResourceImplTest {
         assertThat(results.getFirst().getScoreByTicketsList().getFirst().getTicketCategoryScoresList().getFirst().getScore()).isEqualTo(expectedAverage);
     }
 
-    // TODO: More tests
     @Test
     void overallQualityScore() throws Exception {
-        doReturn(List.of(
-                createRating(1),
-                createRating(2),
-                createRating(3),
-                createRating(4),
-                createRating(5)))
-                .when(scoreService)
-                .getRatingsForPeriod(any(), any());
-
         final int expectedAverage = 42;
+        doReturn(expectedAverage).when(scoreService).getScoreForPeriod(any(), any());
+
         OverallQualityScoreRequest request = OverallQualityScoreRequest.newBuilder()
                 .setPeriodStart(Timestamp.newBuilder().build())
                 .setPeriodEnd(Timestamp.newBuilder().build())
@@ -95,6 +88,8 @@ public class ScoreResourceImplTest {
         assertNull(responseObserver.getError());
         final var result = responseObserver.getValues();
         assertThat(result.getFirst().getScore()).isEqualTo(expectedAverage);
+
+        verify(scoreService).getScoreForPeriod(any(), any());
     }
 
     private Rating createRating(int rating) {
