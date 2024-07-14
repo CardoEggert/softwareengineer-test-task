@@ -1,9 +1,6 @@
 package com.eggert.engineer.task;
 
 import com.eggert.engineer.grpc.*;
-import com.eggert.engineer.task.db.entities.Rating;
-import com.eggert.engineer.task.db.entities.RatingCategory;
-import com.eggert.engineer.task.db.entities.Ticket;
 import com.eggert.engineer.task.util.DateUtil;
 import com.google.protobuf.Timestamp;
 import io.grpc.Status;
@@ -11,25 +8,14 @@ import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
-import org.springframework.util.CollectionUtils;
 
 import java.time.*;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import static com.eggert.engineer.task.ScoreRequestHandler.validateRequest;
-import static com.eggert.engineer.task.util.CollectionUtil.batches;
-import static com.eggert.engineer.task.util.DateUtil.splitRange;
-import static com.eggert.engineer.task.util.ScoreUtil.averagePercentageFromRatings;
 
 @GrpcService
 public class ScoreResourceImpl extends ScoreResourceGrpc.ScoreResourceImplBase {
 
-    public static final int BATCH_SIZE = 200;
     @Autowired
     private ScoreService scoreService;
 
@@ -40,39 +26,12 @@ public class ScoreResourceImpl extends ScoreResourceGrpc.ScoreResourceImplBase {
         } catch (RuntimeException rte) {
             responseObserver.onError(Status.INVALID_ARGUMENT.withDescription(rte.getMessage()).asException());
         }
-        final var responseBuilder = CategoryScoresOverPeriodResponse.newBuilder();
         final LocalDateTime periodStart = convert(request.getPeriodStart());
         final LocalDateTime periodEnd = convert(request.getPeriodEnd());
-        final List<Rating> ratings = scoreService.getRatingForPeriod(periodStart, periodEnd);
-        final Map<RatingCategory, List<Rating>> ratingsByCategoryMap = ratings.stream().collect(Collectors.groupingBy(Rating::getRatingCategory));
-        final long monthsDelta = ChronoUnit.MONTHS.between(periodStart, periodEnd);
-        final boolean aggregateDaily = monthsDelta == 0L;
-        final List<Pair<LocalDate, LocalDate>> periods = splitRange(periodStart.toLocalDate(), periodEnd.toLocalDate(), aggregateDaily);
-        for (Map.Entry<RatingCategory, List<Rating>> ratingsByCategory : ratingsByCategoryMap.entrySet()) {
-            final RatingCategory category = ratingsByCategory.getKey();
-            final List<Rating> categoryRatings = ratingsByCategory.getValue();
-            final var categoryScoreOverPeriodBuilder = CategoryScoreOverPeriod.newBuilder();
-            categoryScoreOverPeriodBuilder.setCategory(category.getName());
-            categoryScoreOverPeriodBuilder.setRatings(categoryRatings.size());
-            categoryScoreOverPeriodBuilder.setScoreForPeriod(averagePercentageFromRatings(categoryRatings).intValue());
-            for (Pair<LocalDate, LocalDate> period : periods) {
-                final var datePeriodBuilder = PeriodScore.newBuilder();
-                datePeriodBuilder.setPeriodStart(period.getFirst().format(DateTimeFormatter.ISO_LOCAL_DATE));
-                datePeriodBuilder.setPeriodEnd(period.getSecond().format(DateTimeFormatter.ISO_LOCAL_DATE));
-                datePeriodBuilder.setScore(
-                        averagePercentageFromRatings(
-                                categoryRatings
-                                        .stream()
-                                        .filter(categoryRating ->
-                                                categoryRating.getCreatedAt().isAfter(LocalDateTime.of(period.getFirst(), LocalTime.MIN))
-                                                        && categoryRating.getCreatedAt().isBefore(LocalDateTime.of(period.getSecond(), aggregateDaily ? LocalTime.MIN : LocalTime.MAX)))
-                                        .toList())
-                                .intValue());
-                categoryScoreOverPeriodBuilder.addPeriodScores(datePeriodBuilder.build());
-            }
-            responseBuilder.addCategoryScoreOverPeriods(categoryScoreOverPeriodBuilder.build());
-        }
-        responseObserver.onNext(responseBuilder.build());
+        final CategoryScoresOverPeriodResponse response = CategoryScoresOverPeriodResponse.newBuilder()
+                .addAllCategoryScoreOverPeriods(scoreService.getCategoryScoresOverPeriod(periodStart, periodEnd))
+                .build();
+        responseObserver.onNext(response);
         responseObserver.onCompleted();
     }
 
@@ -83,38 +42,12 @@ public class ScoreResourceImpl extends ScoreResourceGrpc.ScoreResourceImplBase {
         } catch (RuntimeException rte) {
             responseObserver.onError(Status.INVALID_ARGUMENT.withDescription(rte.getMessage()).asException());
         }
-        final var responseBuilder = ScoresByTicketResponse.newBuilder();
         final LocalDateTime periodStart = convert(request.getPeriodStart());
         final LocalDateTime periodEnd = convert(request.getPeriodEnd());
-        final List<Ticket> tickets =  scoreService.getTicketForPeriod(periodStart, periodEnd);
-        for (List<Ticket> batchTickets : batches(tickets, BATCH_SIZE)) {
-            final List<Rating> ratings = scoreService.getRatingsForTickets(
-                    batchTickets.stream().map(Ticket::getId).collect(Collectors.toSet()));
-            final Map<Integer, List<Rating>> ratingsByTicketId = ratings
-                    .stream()
-                    .collect(Collectors.groupingBy(x -> x.getTicket().getId()));
-            for (Ticket ticket : batchTickets) {
-                final var ticketBuilder = ScoreByTicket.newBuilder();
-                ticketBuilder.setId(ticket.getId());
-                final List<Rating> ticketRatings = ratingsByTicketId.get(ticket.getId());
-                if (CollectionUtils.isEmpty(ticketRatings)) {
-                    continue;
-                }
-                final Map<RatingCategory, List<Rating>> ratingsByCategories = ticketRatings
-                        .stream()
-                        .collect(Collectors.groupingBy(Rating::getRatingCategory));
-                for (Map.Entry<RatingCategory, List<Rating>> ratingsByCategory : ratingsByCategories.entrySet()) {
-                    final var categoryBuilder = TicketCategoryScore.newBuilder();
-                    final RatingCategory ratingCategory = ratingsByCategory.getKey();
-                    categoryBuilder.setName(ratingCategory.getName());
-                    final List<Rating> ratingsForCategory = ratingsByCategory.getValue();
-                    categoryBuilder.setScore(averagePercentageFromRatings(ratingsForCategory).intValue());
-                    ticketBuilder.addTicketCategoryScores(categoryBuilder.build());
-                }
-                responseBuilder.addScoreByTickets(ticketBuilder.build());
-            }
-        }
-        responseObserver.onNext(responseBuilder.build());
+        final ScoresByTicketResponse response = ScoresByTicketResponse.newBuilder()
+                .addAllScoreByTickets(scoreService.getScoresByTicket(periodStart, periodEnd))
+                .build();
+        responseObserver.onNext(response);
         responseObserver.onCompleted();
     }
 
