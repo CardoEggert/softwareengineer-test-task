@@ -55,7 +55,7 @@ public class ScoreResourceImpl extends ScoreResourceGrpc.ScoreResourceImplBase {
                                         .stream()
                                         .filter(categoryRating ->
                                                 categoryRating.getCreatedAt().isAfter(LocalDateTime.of(period.getFirst(), LocalTime.MIN))
-                                                        && categoryRating.getCreatedAt().isBefore(LocalDateTime.of(period.getSecond(), LocalTime.MAX)))
+                                                        && categoryRating.getCreatedAt().isBefore(LocalDateTime.of(period.getSecond(), aggregateDaily ? LocalTime.MIN : LocalTime.MAX)))
                                         .toList())
                                 .intValue());
                 categoryScoreOverPeriodBuilder.addPeriodScores(datePeriodBuilder.build());

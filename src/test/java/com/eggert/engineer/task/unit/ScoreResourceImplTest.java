@@ -20,6 +20,8 @@ import org.springframework.data.util.Pair;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
@@ -43,19 +45,19 @@ public class ScoreResourceImplTest {
     @InjectMocks
     private ScoreResourceImpl scoreResource;
 
-    // TODO: Better coverage of what the logic is doing
     @Test
-    void categoryScoresOverPeriod() throws Exception {
+    void categoryScoresOverPeriod_periodInMonths() throws Exception {
         doReturn(List.of(
-                createRating(1),
-                createRating(2),
-                createRating(3)))
+                createRating(1, LocalDateTime.of(2019, 1, 6,1, 1, 1)),
+                createRating(2, LocalDateTime.of(2019, 1, 14,1, 1, 1)),
+                createRating(3, LocalDateTime.of(2019, 1, 24,1, 1, 1)),
+                createRating(3, LocalDateTime.of(2019, 1, 30,1, 1, 1))))
                 .when(scoreService)
                 .getRatingForPeriod(any(), any());
 
         CategoryScoresOverPeriodRequest request = CategoryScoresOverPeriodRequest.newBuilder()
-                .setPeriodStart(Timestamp.newBuilder().build())
-                .setPeriodEnd(Timestamp.newBuilder().build())
+                .setPeriodStart(Timestamp.newBuilder().setSeconds(LocalDateTime.of(2019, 1, 1, 1, 1, 1).toEpochSecond(ZoneOffset.UTC)).build())
+                .setPeriodEnd(Timestamp.newBuilder().setSeconds(LocalDateTime.of(2019, 2, 4, 1, 1, 1).toEpochSecond(ZoneOffset.UTC)).build())
                 .build();
         StreamRecorder<CategoryScoresOverPeriodResponse> responseObserver = StreamRecorder.create();
         scoreResource.categoryScoresOverPeriod(request, responseObserver);
@@ -65,6 +67,74 @@ public class ScoreResourceImplTest {
         assertNull(responseObserver.getError());
         final var results = responseObserver.getValues();
         assertThat(results).isNotEmpty();
+        final var categoryScoreOverPeriod = results.getFirst().getCategoryScoreOverPeriodsList().getFirst();
+        assertThat(categoryScoreOverPeriod.getCategory()).isEqualTo(CATEGORY_NAME);
+        assertThat(categoryScoreOverPeriod.getScoreForPeriod()).isEqualTo(31);
+        assertThat(categoryScoreOverPeriod.getRatings()).isEqualTo(4);
+        assertThat(categoryScoreOverPeriod.getPeriodScoresList()).hasSize(5);
+        assertThat(categoryScoreOverPeriod.getPeriodScoresList())
+                .anySatisfy(periodScore -> {
+            assertThat(periodScore.getPeriodStart()).isEqualTo("2019-01-01");
+            assertThat(periodScore.getPeriodEnd()).isEqualTo("2019-01-07");
+            assertThat(periodScore.getScore()).isEqualTo(14);
+        }).anySatisfy(periodScore -> {
+            assertThat(periodScore.getPeriodStart()).isEqualTo("2019-01-08");
+            assertThat(periodScore.getPeriodEnd()).isEqualTo("2019-01-14");
+            assertThat(periodScore.getScore()).isEqualTo(28);
+        }).anySatisfy(periodScore -> {
+            assertThat(periodScore.getPeriodStart()).isEqualTo("2019-01-15");
+            assertThat(periodScore.getPeriodEnd()).isEqualTo("2019-01-21");
+            assertThat(periodScore.getScore()).isZero();
+        }).anySatisfy(periodScore -> {
+            assertThat(periodScore.getPeriodStart()).isEqualTo("2019-01-22");
+            assertThat(periodScore.getPeriodEnd()).isEqualTo("2019-01-28");
+            assertThat(periodScore.getScore()).isEqualTo(42);
+        }).anySatisfy(periodScore -> {
+            assertThat(periodScore.getPeriodStart()).isEqualTo("2019-01-29");
+            assertThat(periodScore.getPeriodEnd()).isEqualTo("2019-02-04");
+            assertThat(periodScore.getScore()).isEqualTo(42);
+        });
+    }
+    @Test
+    void categoryScoresOverPeriod_periodInDays() throws Exception {
+        doReturn(List.of(
+                createRating(1, LocalDateTime.of(2019, 1, 1,1, 1, 1)),
+                createRating(2, LocalDateTime.of(2019, 1, 2,1, 1, 1)),
+                createRating(3, LocalDateTime.of(2019, 1, 3,1, 1, 1))))
+                .when(scoreService)
+                .getRatingForPeriod(any(), any());
+
+        CategoryScoresOverPeriodRequest request = CategoryScoresOverPeriodRequest.newBuilder()
+                .setPeriodStart(Timestamp.newBuilder().setSeconds(LocalDateTime.of(2019, 1, 1, 1, 1, 1).toEpochSecond(ZoneOffset.UTC)).build())
+                .setPeriodEnd(Timestamp.newBuilder().setSeconds(LocalDateTime.of(2019, 1, 4, 1, 1, 1).toEpochSecond(ZoneOffset.UTC)).build())
+                .build();
+        StreamRecorder<CategoryScoresOverPeriodResponse> responseObserver = StreamRecorder.create();
+        scoreResource.categoryScoresOverPeriod(request, responseObserver);
+        if (!responseObserver.awaitCompletion(5, TimeUnit.SECONDS)) {
+            fail("The call did not terminate in time");
+        }
+        assertNull(responseObserver.getError());
+        final var results = responseObserver.getValues();
+        assertThat(results).isNotEmpty();
+        final var categoryScoreOverPeriod = results.getFirst().getCategoryScoreOverPeriodsList().getFirst();
+        assertThat(categoryScoreOverPeriod.getCategory()).isEqualTo(CATEGORY_NAME);
+        assertThat(categoryScoreOverPeriod.getScoreForPeriod()).isEqualTo(28);
+        assertThat(categoryScoreOverPeriod.getRatings()).isEqualTo(3);
+        assertThat(categoryScoreOverPeriod.getPeriodScoresList()).hasSize(3);
+        assertThat(categoryScoreOverPeriod.getPeriodScoresList())
+                .anySatisfy(periodScore -> {
+            assertThat(periodScore.getPeriodStart()).isEqualTo("2019-01-01");
+            assertThat(periodScore.getPeriodEnd()).isEqualTo("2019-01-02");
+            assertThat(periodScore.getScore()).isEqualTo(14);
+        }).anySatisfy(periodScore -> {
+            assertThat(periodScore.getPeriodStart()).isEqualTo("2019-01-02");
+            assertThat(periodScore.getPeriodEnd()).isEqualTo("2019-01-03");
+            assertThat(periodScore.getScore()).isEqualTo(28);
+        }).anySatisfy(periodScore -> {
+            assertThat(periodScore.getPeriodStart()).isEqualTo("2019-01-03");
+            assertThat(periodScore.getPeriodEnd()).isEqualTo("2019-01-04");
+            assertThat(periodScore.getScore()).isEqualTo(42);
+        });
     }
 
     // TODO: More tests
@@ -120,6 +190,10 @@ public class ScoreResourceImplTest {
     }
 
     private Rating createRating(int rating) {
+        return createRating(rating, null);
+    }
+
+    private Rating createRating(int rating, LocalDateTime createdAt) {
         RatingCategory ratingCategory = new RatingCategory();
         ratingCategory.setId(CATEGORY_ID);
         ratingCategory.setName(CATEGORY_NAME);
@@ -128,6 +202,7 @@ public class ScoreResourceImplTest {
         r.setTicket(createTicket());
         r.setRatingCategory(ratingCategory);
         r.setRating(BigDecimal.valueOf(rating));
+        r.setCreatedAt(createdAt);
         return r;
     }
 
