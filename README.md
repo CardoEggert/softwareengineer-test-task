@@ -70,11 +70,12 @@ grpcurl --plaintext -d '{"selectedPeriodStart": "2020-01-01T00:00:00Z", "selecte
 ### Bonus question
 > How would you build and deploy the solution?
 #### Solution
-I would dockerize the application by creating a Dockerfile. The Dockerfile would allow me to create a docker image that could be then used for deploying. 
+I would dockerize the application by creating a Dockerfile. The Dockerfile would allow me to create a docker image that could be then used for deploying.
 As Klaus is using Kubernetes then the image should be uploaded to the cloud providers docker image repository (like AWS has Elastic Container Registry).
-Assuming that the Kubernetes service has access to the registry, there should be some configuration file done for deploying the docker image. 
+Assuming that the Kubernetes service has access to the registry, there should be some configuration file done for deploying the docker image.
 If the configuration file is present, Kubernetes can deploy the solution as defined by the configuration file.
 (Hopefully there is already a CI/CD pipeline in Klaus that handles this)
+
 ----
 # Improvements
 As the solution is not a final solution code-wise, I am marking here some improvements that could be made
