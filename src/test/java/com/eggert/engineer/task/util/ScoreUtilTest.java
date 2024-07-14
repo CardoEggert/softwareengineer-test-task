@@ -1,6 +1,5 @@
-package com.eggert.engineer.task.unit;
+package com.eggert.engineer.task.util;
 
-import com.eggert.engineer.task.util.ScoreUtil;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -40,7 +39,6 @@ public class ScoreUtilTest {
     }
     // TODO: Add more complicated scenarios that are borderline regarding percentages
     // TODO: Add scenarios where the percentage result would not be an integer
-
     @ParameterizedTest
     @MethodSource(value = "scoreSource")
     void calculateScoreTests(BigDecimal categoryWeight, BigDecimal rating, BigDecimal expectedScore) {

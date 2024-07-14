@@ -5,6 +5,7 @@ import com.eggert.engineer.task.db.entities.Rating;
 import com.eggert.engineer.task.db.entities.RatingCategory;
 import com.eggert.engineer.task.db.entities.Ticket;
 import com.google.protobuf.Timestamp;
+import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +20,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.eggert.engineer.task.ScoreRequestHandler.validateRequest;
 import static com.eggert.engineer.task.util.CollectionUtil.batches;
+import static com.eggert.engineer.task.util.DateUtil.splitRange;
 import static com.eggert.engineer.task.util.ScoreUtil.averagePercentageFromRatings;
 
 @GrpcService
@@ -29,9 +32,13 @@ public class ScoreResourceImpl extends ScoreResourceGrpc.ScoreResourceImplBase {
     @Autowired
     private ScoreService scoreService;
 
-    // TODO: Date validation
     @Override
     public void categoryScoresOverPeriod(CategoryScoresOverPeriodRequest request, StreamObserver<CategoryScoresOverPeriodResponse> responseObserver) {
+        try {
+            validateRequest(request);
+        } catch (RuntimeException rte) {
+            responseObserver.onError(Status.INVALID_ARGUMENT.withDescription(rte.getMessage()).asException());
+        }
         final var responseBuilder = CategoryScoresOverPeriodResponse.newBuilder();
         final LocalDateTime periodStart = convert(request.getPeriodStart());
         final LocalDateTime periodEnd = convert(request.getPeriodEnd());
@@ -68,23 +75,13 @@ public class ScoreResourceImpl extends ScoreResourceGrpc.ScoreResourceImplBase {
         responseObserver.onCompleted();
     }
 
-    public static List<Pair<LocalDate, LocalDate>> splitRange(LocalDate start, LocalDate end, boolean stepInDays) {
-        final List<Pair<LocalDate, LocalDate>> ranges = new ArrayList<>();
-        LocalDate currentStart = start;
-        while (currentStart.isBefore(end)) {
-            LocalDate currentEnd = stepInDays ? currentStart.plusDays(1) : currentStart.plusDays(6);
-            if (currentEnd.isAfter(end)) {
-                currentEnd = end;
-            }
-            ranges.add(Pair.of(currentStart, currentEnd));
-            currentStart = stepInDays ? currentEnd : currentEnd.plusDays(1);
-        }
-        return ranges;
-    }
-
-    // TODO: Date validation
     @Override
     public void scoresByTicket(ScoresByTicketRequest request, StreamObserver<ScoresByTicketResponse> responseObserver) {
+        try {
+            validateRequest(request);
+        } catch (RuntimeException rte) {
+            responseObserver.onError(Status.INVALID_ARGUMENT.withDescription(rte.getMessage()).asException());
+        }
         final var responseBuilder = ScoresByTicketResponse.newBuilder();
         final LocalDateTime periodStart = convert(request.getPeriodStart());
         final LocalDateTime periodEnd = convert(request.getPeriodEnd());
@@ -120,9 +117,13 @@ public class ScoreResourceImpl extends ScoreResourceGrpc.ScoreResourceImplBase {
         responseObserver.onCompleted();
     }
 
-    // TODO: Date validation
     @Override
     public void overallQualityScore(OverallQualityScoreRequest request, StreamObserver<OverallQualityScoreResponse> responseObserver) {
+        try {
+            validateRequest(request);
+        } catch (RuntimeException rte) {
+            responseObserver.onError(Status.INVALID_ARGUMENT.withDescription(rte.getMessage()).asException());
+        }
         final LocalDateTime periodStart = convert(request.getPeriodStart());
         final LocalDateTime periodEnd = convert(request.getPeriodEnd());
         final var responseBuilder = OverallQualityScoreResponse.newBuilder();
@@ -131,15 +132,19 @@ public class ScoreResourceImpl extends ScoreResourceGrpc.ScoreResourceImplBase {
         responseObserver.onCompleted();
     }
 
-    // TODO: Date validation
     @Override
     public void periodOverPeriodScoreChange(PeriodOverPeriodScoreChangeRequest request, StreamObserver<PeriodOverPeriodScoreChangeResponse> responseObserver) {
+        try {
+            validateRequest(request);
+        } catch (RuntimeException rte) {
+            responseObserver.onError(Status.INVALID_ARGUMENT.withDescription(rte.getMessage()).asException());
+        }
         final var responseBuilder = PeriodOverPeriodScoreChangeResponse.newBuilder();
         final LocalDateTime previousPeriodStart = convert(request.getPreviousPeriodStart());
         final LocalDateTime previousPeriodEnd = convert(request.getPreviousPeriodEnd());
-        responseBuilder.setPreviousPeriodScore(scoreService.getScoreForPeriod(previousPeriodStart, previousPeriodEnd));
         final LocalDateTime selectedPeriodStart = convert(request.getSelectedPeriodStart());
         final LocalDateTime selectedPeriodEnd = convert(request.getSelectedPeriodEnd());
+        responseBuilder.setPreviousPeriodScore(scoreService.getScoreForPeriod(previousPeriodStart, previousPeriodEnd));
         responseBuilder.setSelectedPeriodScore(scoreService.getScoreForPeriod(selectedPeriodStart, selectedPeriodEnd));
         responseObserver.onNext(responseBuilder.build());
         responseObserver.onCompleted();
