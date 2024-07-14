@@ -14,6 +14,28 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class DateUtilTest {
 
+    // TODO: More test cases (cases like leap year and etc.)
+    private static Stream<Arguments> previousPeriodSource() {
+        return Stream.of(
+                Arguments.of(
+                        LocalDate.of(2020, 2, 15),
+                        LocalDate.of(2020, 2, 21),
+                        LocalDate.of(2020, 2, 8),
+                        LocalDate.of(2020, 2, 14)),
+                Arguments.of(
+                        LocalDate.of(2019, 1, 1),
+                        LocalDate.of(2019, 1,2),
+                        LocalDate.of(2018, 12, 30),
+                        LocalDate.of(2018, 12,31))
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("previousPeriodSource")
+    void previousPeriod(LocalDate start, LocalDate end, LocalDate expectedPreviousDateStart, LocalDate expectedPreviousDateEnd) {
+        assertThat(DateUtil.previousPeriod(start, end)).isEqualTo(Pair.of(expectedPreviousDateStart, expectedPreviousDateEnd));
+    }
+
     // TODO: More test cases
     private static Stream<Arguments> splitRangeSource() {
         return Stream.of(

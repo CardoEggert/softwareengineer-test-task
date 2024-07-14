@@ -4,6 +4,7 @@ import com.eggert.engineer.grpc.*;
 import com.eggert.engineer.task.db.entities.Rating;
 import com.eggert.engineer.task.db.entities.RatingCategory;
 import com.eggert.engineer.task.db.entities.Ticket;
+import com.eggert.engineer.task.util.DateUtil;
 import com.google.protobuf.Timestamp;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
@@ -140,10 +141,13 @@ public class ScoreResourceImpl extends ScoreResourceGrpc.ScoreResourceImplBase {
             responseObserver.onError(Status.INVALID_ARGUMENT.withDescription(rte.getMessage()).asException());
         }
         final var responseBuilder = PeriodOverPeriodScoreChangeResponse.newBuilder();
-        final LocalDateTime previousPeriodStart = convert(request.getPreviousPeriodStart());
-        final LocalDateTime previousPeriodEnd = convert(request.getPreviousPeriodEnd());
         final LocalDateTime selectedPeriodStart = convert(request.getSelectedPeriodStart());
         final LocalDateTime selectedPeriodEnd = convert(request.getSelectedPeriodEnd());
+        final Pair<LocalDate, LocalDate> previousPeriod = DateUtil.previousPeriod(
+                selectedPeriodStart.toLocalDate(),
+                selectedPeriodEnd.toLocalDate());
+        final LocalDateTime previousPeriodStart = LocalDateTime.of(previousPeriod.getFirst(), LocalTime.MIN);
+        final LocalDateTime previousPeriodEnd = LocalDateTime.of(previousPeriod.getSecond(), LocalTime.MAX);
         responseBuilder.setPreviousPeriodScore(scoreService.getScoreForPeriod(previousPeriodStart, previousPeriodEnd));
         responseBuilder.setSelectedPeriodScore(scoreService.getScoreForPeriod(selectedPeriodStart, selectedPeriodEnd));
         responseObserver.onNext(responseBuilder.build());

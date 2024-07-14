@@ -3,12 +3,24 @@ package com.eggert.engineer.task.util;
 import org.springframework.data.util.Pair;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
 public final class DateUtil {
 
     private DateUtil(){}
+
+    /**
+     * Helper method for finding the previous period given the selected period
+     * @param start - start of the selected period
+     * @param end - end of the selected period
+     * @return previous period using the diff of start-end from the initial start value
+     */
+    public static Pair<LocalDate, LocalDate> previousPeriod(LocalDate start, LocalDate end) {
+        LocalDate past = start.minusDays(ChronoUnit.DAYS.between(start, end) + 1);
+        return Pair.of(past, start.minusDays(1));
+    }
 
     /**
      * Helper method to split a date range into separate ranges
