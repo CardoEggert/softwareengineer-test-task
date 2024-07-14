@@ -1,5 +1,16 @@
 # Software Engineer Test Task Submission
 
+## How to run locally (macOS)
+```bash
+# Expecting the working directory to be the repository
+cd grpc-lib
+mvn install # For creating the compiled .proto files
+cd ..
+mvn spring-boot:run
+```
+
+----
+## Tasks
 Adding the original task descriptions here with some words about the solution and some questions I would ask if this was a part of the development. 
 Those questions should be aligned with the person responsible for the product. 
 Putting in braces what the current solution is and if there would be any ideas for improving it.
