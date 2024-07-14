@@ -35,6 +35,12 @@ public class ScoreResourceIT {
     @GrpcClient("inProcess")
     private ScoreResourceGrpc.ScoreResourceBlockingStub blockingStub;
 
+    /*
+    TODO: Ideally there should be better integration tests that generate the data and then assert that we get the expected result
+    Right now as we are using a fixed database, then I do not see any issue with just having some certain values being used for it
+    + There should be integration tests that try to cover failing scenarios as well such as conflicting periods or even missing ones
+     */
+
     @Test
     public void categoryScoresOverPeriod() {
         final CategoryScoresOverPeriodRequest request = CategoryScoresOverPeriodRequest.newBuilder()
