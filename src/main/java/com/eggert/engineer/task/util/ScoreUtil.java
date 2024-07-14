@@ -1,5 +1,6 @@
 package com.eggert.engineer.task.util;
 
+import com.eggert.engineer.task.db.entities.Rating;
 import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
@@ -12,6 +13,19 @@ public final class ScoreUtil {
     private static final BigDecimal ONE_HUNDRED = BigDecimal.valueOf(100);
 
     private ScoreUtil() {}
+
+    /**
+     * Helper method to get the average percentage
+     * @param ratings - list of ratings
+     * @return average percentage
+     */
+    public static BigDecimal averagePercentageFromRatings(List<Rating> ratings) {
+        final List<BigDecimal> scores = ratings
+                .stream()
+                .map(x -> ScoreUtil.calculateScore(x.getRatingCategory().getWeight(), x.getRating()))
+                .toList();
+        return ScoreUtil.averagePercentage(scores);
+    }
 
     /**
      * Aggregate percentages using simple average

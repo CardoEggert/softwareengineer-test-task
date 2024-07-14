@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
@@ -35,11 +34,12 @@ public class ScoreService {
     @Transactional(readOnly = true)
     public int getScoreForPeriod(LocalDateTime periodStart, LocalDateTime periodEnd) {
         final List<Rating> ratings = ratingRepository.getRatings(periodStart, periodEnd);
-        final List<BigDecimal> scores = ratings
-                .stream()
-                .map(x -> ScoreUtil.calculateScore(x.getRatingCategory().getWeight(), x.getRating()))
-                .toList();
-        final BigDecimal aggregatedScore = ScoreUtil.averagePercentage(scores);
-        return aggregatedScore.intValue();
+        return ScoreUtil.averagePercentageFromRatings(ratings).intValue();
     }
+
+    @Transactional(readOnly = true)
+    public List<Rating> getRatingForPeriod(LocalDateTime periodStart, LocalDateTime periodEnd) {
+        return ratingRepository.getRatings(periodStart, periodEnd);
+    }
+
 }

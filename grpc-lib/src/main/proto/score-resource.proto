@@ -7,9 +7,15 @@ option java_outer_classname = "ScoreResourceProto";
 import "google/protobuf/timestamp.proto";
 
 service ScoreResource {
+  rpc CategoryScoresOverPeriod (CategoryScoresOverPeriodRequest) returns (CategoryScoresOverPeriodResponse) {}
   rpc ScoresByTicket (ScoresByTicketRequest) returns (ScoresByTicketResponse) {}
   rpc OverallQualityScore (OverallQualityScoreRequest) returns (OverallQualityScoreResponse) {}
   rpc PeriodOverPeriodScoreChange (PeriodOverPeriodScoreChangeRequest) returns (PeriodOverPeriodScoreChangeResponse) {}
+}
+
+message CategoryScoresOverPeriodRequest {
+  google.protobuf.Timestamp period_start = 1;
+  google.protobuf.Timestamp period_end = 2;
 }
 
 message ScoresByTicketRequest {
@@ -27,6 +33,23 @@ message PeriodOverPeriodScoreChangeRequest {
   google.protobuf.Timestamp previous_period_end = 2;
   google.protobuf.Timestamp selected_period_start = 3;
   google.protobuf.Timestamp selected_period_end = 4;
+}
+
+message PeriodScore {
+  string period_start = 1;
+  string period_end = 2;
+  int32 score = 3;
+}
+
+message CategoryScoreOverPeriod {
+  string category = 1;
+  int32 ratings = 2;
+  repeated PeriodScore periodScores = 3;
+  int32 scoreForPeriod = 4;
+}
+
+message CategoryScoresOverPeriodResponse {
+  repeated CategoryScoreOverPeriod categoryScoreOverPeriods = 1;
 }
 
 message TicketCategoryScore {
