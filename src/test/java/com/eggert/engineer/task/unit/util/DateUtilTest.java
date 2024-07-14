@@ -1,6 +1,7 @@
-package com.eggert.engineer.task.util;
+package com.eggert.engineer.task.unit.util;
 
-import com.eggert.engineer.task.ScoreResourceImpl;
+import com.eggert.engineer.task.util.DateUtil;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -33,7 +34,7 @@ public class DateUtilTest {
     @ParameterizedTest
     @MethodSource("previousPeriodSource")
     void previousPeriod(LocalDate start, LocalDate end, LocalDate expectedPreviousDateStart, LocalDate expectedPreviousDateEnd) {
-        assertThat(DateUtil.previousPeriod(start, end)).isEqualTo(Pair.of(expectedPreviousDateStart, expectedPreviousDateEnd));
+        Assertions.assertThat(DateUtil.previousPeriod(start, end)).isEqualTo(Pair.of(expectedPreviousDateStart, expectedPreviousDateEnd));
     }
 
     // TODO: More test cases

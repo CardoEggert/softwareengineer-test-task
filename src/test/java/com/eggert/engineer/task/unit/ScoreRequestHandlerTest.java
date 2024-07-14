@@ -1,16 +1,16 @@
-package com.eggert.engineer.task;
+package com.eggert.engineer.task.unit;
 
 import com.eggert.engineer.grpc.CategoryScoresOverPeriodRequest;
 import com.eggert.engineer.grpc.OverallQualityScoreRequest;
 import com.eggert.engineer.grpc.PeriodOverPeriodScoreChangeRequest;
 import com.eggert.engineer.grpc.ScoresByTicketRequest;
+import com.eggert.engineer.task.ScoreRequestHandler;
 import com.google.protobuf.Timestamp;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
 
 class ScoreRequestHandlerTest {
 

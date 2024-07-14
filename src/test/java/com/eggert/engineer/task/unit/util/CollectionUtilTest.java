@@ -1,5 +1,7 @@
-package com.eggert.engineer.task.util;
+package com.eggert.engineer.task.unit.util;
 
+import com.eggert.engineer.task.util.CollectionUtil;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -22,6 +24,6 @@ class CollectionUtilTest {
     @ParameterizedTest
     @MethodSource("batchesSource")
     void batches(List<Integer> inputList, int batchSize, List<List<Integer>> batchedList) {
-        assertThat(CollectionUtil.batches(inputList, batchSize)).isEqualTo(batchedList);
+        Assertions.assertThat(CollectionUtil.batches(inputList, batchSize)).isEqualTo(batchedList);
     }
 }

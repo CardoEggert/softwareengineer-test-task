@@ -1,5 +1,7 @@
-package com.eggert.engineer.task.util;
+package com.eggert.engineer.task.unit.util;
 
+import com.eggert.engineer.task.util.ScoreUtil;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -42,7 +44,7 @@ public class ScoreUtilTest {
     @ParameterizedTest
     @MethodSource(value = "scoreSource")
     void calculateScoreTests(BigDecimal categoryWeight, BigDecimal rating, BigDecimal expectedScore) {
-        assertThat(ScoreUtil.calculateScore(categoryWeight, rating)).isEqualByComparingTo(expectedScore);
+        Assertions.assertThat(ScoreUtil.calculateScore(categoryWeight, rating)).isEqualByComparingTo(expectedScore);
     }
 
     private static Stream<Arguments> averagePercentageSource() {
